@@ -5,14 +5,14 @@ abstract interface class PrayerRepository {
   Future<List<PrayerDay>> getMonthPrayer({
     required int year,
     required int month,
-    required double latitude,
-    required double longitude,
+    required String provinsi,
+    required String kabkota,
   });
 
   /// Shortcut untuk hari ini.
   Future<PrayerDay?> getTodayPrayer({
-    required double latitude,
-    required double longitude,
+    required String provinsi,
+    required String kabkota,
   });
 
   /// Cek apakah data bulan ini sudah ada di cache lokal.

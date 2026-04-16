@@ -7,37 +7,44 @@ class PrayerRemoteDatasource {
 
   final Dio _dio;
 
-  // Method 11 = Muslim World League (standard internasional)
-  // Method 20 = Kemenag RI (untuk Indonesia)
-  static const _defaultMethod = 11;
+  // Relative path — baseUrl sudah di-set ke https://equran.id/api/v2
+  static const _path = '/shalat';
 
-  /// Ambil jadwal sholat 1 bulan dari Aladhan API.
+  /// Ambil jadwal sholat 1 bulan dari equran.id API v2.
   Future<List<PrayerDayModel>> getMonthCalendar({
     required int year,
     required int month,
-    required double latitude,
-    required double longitude,
-    int method = _defaultMethod,
+    required String provinsi,
+    required String kabkota,
   }) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-      'https://api.aladhan.com/v1/calendar/$year/$month',
-      queryParameters: {
-        'latitude': latitude,
-        'longitude': longitude,
-        'method': method,
+    final response = await _dio.post<Map<String, dynamic>>(
+      _path,
+      data: {
+        'provinsi': provinsi,
+        'kabkota': kabkota,
+        'bulan': month,   // int, bukan string
+        'tahun': year,    // int, bukan string
       },
     );
 
     final data = response.data;
-    if (data == null || data['code'] != 200) {
+    final code = data?['code'];
+    if (data == null || code?.toString() != '200') {
       throw Exception(
-        'Gagal mengambil jadwal sholat: ${data?['status'] ?? 'Unknown error'}',
+        'Gagal mengambil jadwal sholat (code=$code): ${data?['message'] ?? 'Unknown error'}',
       );
     }
 
-    final list = data['data'] as List<dynamic>;
-    return list
-        .map((e) => PrayerDayModel.fromAladhan(e as Map<String, dynamic>))
+    final rawData = data['data'];
+    final jadwal = rawData is Map
+        ? (rawData['jadwal'] as List<dynamic>)
+        : (rawData as List<dynamic>);
+    return jadwal
+        .map((e) => PrayerDayModel.fromEquran(
+              e as Map<String, dynamic>,
+              year,
+              month,
+            ))
         .toList();
   }
 }

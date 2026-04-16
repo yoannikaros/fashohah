@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/ayat.dart';
@@ -108,11 +109,11 @@ class _SuratHeader extends StatelessWidget {
           // Nama Arab besar
           Text(
             surat.nama,
-            style: TextStyle(
-              fontSize: 48,
+            style: GoogleFonts.amiri(
+              fontSize: 52,
               color: AppColors.primary,
-              fontWeight: FontWeight.w500,
-              height: 1.3,
+              fontWeight: FontWeight.w700,
+              height: 1.4,
             ),
           ),
 
@@ -157,11 +158,11 @@ class _SuratHeader extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
-                    style: TextStyle(
-                      fontSize: 26,
+                    style: GoogleFonts.amiri(
+                      fontSize: 28,
                       color: cs.onSurface.withValues(alpha: 0.85),
-                      height: 1.8,
-                      letterSpacing: 1,
+                      fontWeight: FontWeight.w700,
+                      height: 2.0,
                     ),
                     textAlign: TextAlign.center,
                   ),

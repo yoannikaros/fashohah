@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/home_page.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/theme/app_theme.dart';
+import 'features/onboarding/presentation/pages/permission_page.dart';
 import 'features/prayer/data/datasources/prayer_local_datasource.dart';
 import 'features/prayer/presentation/providers/prayer_provider.dart';
 import 'features/settings/presentation/providers/settings_provider.dart';
@@ -15,18 +19,25 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Inisialisasi semua service secara paralel
-  final results = await Future.wait([
+  final futures = <Future>[
     _initHive(),
     SharedPreferences.getInstance(),
     SoLoud.instance.init(),
     NotificationService.instance.init(),
-  ]);
+  ];
+  // AdMob hanya tersedia di Android & iOS
+  if (Platform.isAndroid || Platform.isIOS) {
+    await MobileAds.instance.initialize();
+  }
+  final results = await Future.wait(futures);
 
   final localDatasource = results[0] as PrayerLocalDatasource;
   final prefs = results[1] as SharedPreferences;
 
   // Request notification permission
   await NotificationService.instance.requestPermission();
+
+  final onboardingDone = prefs.getBool('onboarding_done') ?? false;
 
   runApp(
     ProviderScope(
@@ -35,7 +46,7 @@ void main() async {
         sharedPreferencesProvider.overrideWithValue(prefs),
         prayerLocalDatasourceProvider.overrideWithValue(localDatasource),
       ],
-      child: const FashohahApp(),
+      child: FashohahApp(onboardingDone: onboardingDone),
     ),
   );
 }
@@ -49,7 +60,8 @@ Future<PrayerLocalDatasource> _initHive() async {
 }
 
 class FashohahApp extends ConsumerWidget {
-  const FashohahApp({super.key});
+  final bool onboardingDone;
+  const FashohahApp({super.key, required this.onboardingDone});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,7 +72,7 @@ class FashohahApp extends ConsumerWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
-      home: const HomePage(),
+      home: onboardingDone ? const HomePage() : const PermissionPage(),
     );
   }
 }

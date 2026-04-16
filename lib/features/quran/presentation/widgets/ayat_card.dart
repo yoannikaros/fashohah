@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/audio/audio_manager.dart';
 import '../../../../core/audio/audio_state.dart';
@@ -90,9 +91,9 @@ class AyatCard extends ConsumerWidget {
                       child: Text(
                         ayat.teksArab,
                         textAlign: TextAlign.right,
-                        style: TextStyle(
+                        style: GoogleFonts.amiri(
                           fontSize: arabicFontSize,
-                          height: 2.0,
+                          height: 2.2,
                           color: isCurrent
                               ? AppColors.primary
                               : cs.onSurface.withValues(alpha: 0.9),

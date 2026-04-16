@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
@@ -50,8 +51,7 @@ class DzikirDetailPage extends ConsumerWidget {
                 item.arabic,
                 textAlign: TextAlign.right,
                 textDirection: TextDirection.rtl,
-                style: TextStyle(
-                  fontFamily: 'serif',
+                style: GoogleFonts.amiri(
                   fontSize: arabicFontSize + 4,
                   height: 2.2,
                   color: cs.onSurface,

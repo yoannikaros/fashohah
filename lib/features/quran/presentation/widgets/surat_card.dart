@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/surat.dart';
@@ -81,10 +82,10 @@ class SuratCard extends StatelessWidget {
                 // ── Nama Arab ─────────────────────────────────
                 Text(
                   surat.nama,
-                  style: TextStyle(
-                    fontSize: 22,
+                  style: GoogleFonts.amiri(
+                    fontSize: 24,
                     color: AppColors.primary,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w700,
                     height: 1.4,
                   ),
                 ),

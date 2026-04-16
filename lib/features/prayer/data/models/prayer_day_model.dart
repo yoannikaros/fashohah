@@ -1,3 +1,4 @@
+import '../../../../core/utils/hijri_calculator.dart';
 import '../../domain/entities/prayer_day.dart';
 
 class PrayerDayModel extends PrayerDay {
@@ -44,6 +45,35 @@ class PrayerDayModel extends PrayerDay {
       hijriMonth: hijri['month']['number'].toString(),
       hijriYear: hijri['year'] as String,
       hijriMonthName: (hijri['month']['en'] as String),
+    );
+  }
+
+  /// Parse dari response equran.id/apidev/shalat.
+  factory PrayerDayModel.fromEquran(
+    Map<String, dynamic> json,
+    int year,
+    int month,
+  ) {
+    final rawTanggal = json['tanggal'];
+    final day = rawTanggal is int
+        ? rawTanggal
+        : int.parse(rawTanggal.toString());
+    final date = DateTime(year, month, day);
+    final hijri = HijriCalculator.fromGregorian(date);
+
+    return PrayerDayModel(
+      date: date,
+      imsak: json['imsak'] as String,
+      fajr: json['subuh'] as String,
+      sunrise: json['terbit'] as String,
+      dhuhr: json['dzuhur'] as String,
+      asr: json['ashar'] as String,
+      maghrib: json['maghrib'] as String,
+      isha: json['isya'] as String,
+      hijriDay: hijri.day,
+      hijriMonth: hijri.month,
+      hijriYear: hijri.year,
+      hijriMonthName: hijri.monthName,
     );
   }
 

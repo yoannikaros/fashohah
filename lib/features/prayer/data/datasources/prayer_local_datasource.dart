@@ -20,20 +20,22 @@ class PrayerLocalDatasource {
 
   String _key(int year, int month) => '$year-$month';
 
-  /// Simpan jadwal 1 bulan ke Hive.
+  /// Simpan jadwal 1 bulan ke Hive, beserta info lokasi.
   Future<void> saveMonth(
     int year,
     int month,
-    List<PrayerDayModel> days,
-  ) async {
+    List<PrayerDayModel> days, {
+    String provinsi = '',
+    String kabkota = '',
+  }) async {
     final jsonList = days.map((d) => d.toJson()).toList();
     await _box.put(_key(year, month), jsonEncode(jsonList));
 
-    // Simpan timestamp untuk tracking kapan data di-fetch
-    await _metaBox.put(
-      '${_key(year, month)}_fetchedAt',
-      DateTime.now().toIso8601String(),
-    );
+    // Simpan timestamp dan lokasi untuk validasi cache
+    final prefix = _key(year, month);
+    await _metaBox.put('${prefix}_fetchedAt', DateTime.now().toIso8601String());
+    await _metaBox.put('${prefix}_provinsi', provinsi);
+    await _metaBox.put('${prefix}_kabkota', kabkota);
   }
 
   /// Baca jadwal 1 bulan dari Hive. Return null jika belum ada.
@@ -56,12 +58,24 @@ class PrayerLocalDatasource {
     return _box.containsKey(_key(year, month));
   }
 
-  /// Cek apakah cache masih valid (< 7 hari untuk bulan berjalan, permanent untuk bulan lalu).
-  bool isCacheValid(int year, int month) {
+  /// Cek apakah cache masih valid untuk lokasi tertentu.
+  /// Bulan lalu → permanent (kecuali lokasi berbeda).
+  /// Bulan ini/depan → valid 7 hari dan lokasi harus cocok.
+  bool isCacheValid(int year, int month, {String provinsi = '', String kabkota = ''}) {
+    if (!isMonthCached(year, month)) return false;
+
+    // Validasi lokasi — jika berbeda dari cache, paksa re-fetch
+    if (provinsi.isNotEmpty || kabkota.isNotEmpty) {
+      final prefix = _key(year, month);
+      final cachedProvinsi = _metaBox.get('${prefix}_provinsi') ?? '';
+      final cachedKabkota = _metaBox.get('${prefix}_kabkota') ?? '';
+      if (cachedProvinsi != provinsi || cachedKabkota != kabkota) return false;
+    }
+
     final now = DateTime.now();
-    // Bulan lalu atau lebih → cache permanent (tidak perlu refresh)
+    // Bulan lalu atau lebih → cache permanent (lokasi sudah cocok di atas)
     if (year < now.year || (year == now.year && month < now.month)) {
-      return isMonthCached(year, month);
+      return true;
     }
 
     // Bulan ini atau depan → cache valid 7 hari
